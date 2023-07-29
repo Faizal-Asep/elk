@@ -1,0 +1,107 @@
+heartbeat.monitors:
+#Monitor all containers using an icmp ping
+- type: icmp
+  schedule: '*/5 * * * * * *'
+  name: elastic_beat
+  hosts: ["metricbeat","filebeat","heartbeat"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 16s
+  wait: 1s
+#Monitor the ES instance over http with a GET to the /  - checking for a 200 response
+- type: http
+  name: elasticsearch
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://elasticsearch:9200"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 5s
+  username: '${ES_USERNAME:elastic}'
+  password: '${ES_PASSWORD:changeme}'
+  check.request:
+    method: "GET"
+  check.response:
+    status: 200
+#Monitor the Kibana instance with a http GET to / - checking for a 200 response code
+- type: http
+  name: kibana
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://kibana:5601/status"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 5s
+  username: elastic
+  password: changeme
+  check.request:
+    method: "GET"
+  check.response:
+    status: 200
+#Monitor the apm-server instance with a http GET to / - checking for a 200 response code
+- type: http
+  name: apm-server
+  enabled: true
+  schedule: '@every 5s'
+  urls: ["http://apm-server:8200"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 5s
+  check.request:
+    method: "GET"
+  check.response:
+    status: 200
+#Monitor the Nginx instance with a http GET to /server-status - checking for a 200 response code
+# - type: http
+#   id: komposer
+#   name: komposer
+#   enabled: true
+#   schedule: '@every 5s'
+#   urls: ["http://app:8080/status"]
+#   ipv4: true
+#   ipv6: true
+#   mode: any
+#   timeout: 5s
+#   check.request:
+#     method: "GET"
+#   check.response:
+#     status: 200
+#Monitor all containers using an icmp ping
+- type: icmp
+  schedule: '*/5 * * * * * *'
+  name: microservices
+  hosts: ["profile","composer"]
+  ipv4: true
+  ipv6: true
+  mode: any
+  timeout: 16s
+  wait: 1s
+# #Monitor the Apache2 instance with a http GET to /server-status - checking for a 200 response code
+# - type: http
+#   enabled: true
+#   schedule: '@every 5s'
+#   urls: ["http://apache2/server-status"]
+#   ipv4: true
+#   ipv6: true
+#   mode: any
+#   timeout: 5s
+#   check.request:
+#     method: "GET"
+#   check.response:
+#     status: 200
+#Monitor the Mysql instance by attempting a tcp connect on port 3306
+- type: tcp
+  name: db-mysql
+  enabled: true
+  schedule: '@every 5s'
+  hosts: ["tcp://db-mysql:3306"]
+#Index any heartbeat data to our ES instance
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: '${ES_USERNAME:elastic}'
+  password: '${ES_PASSWORD:changeme}'
+logging.to_files: false

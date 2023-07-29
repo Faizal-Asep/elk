@@ -1,0 +1,39 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      hints.default_config.enabled: false
+
+
+processors:
+  - add_host_metadata: ~
+  - drop_fields:
+      fields: ["host.name"]
+      ignore_missing: true
+  - copy_fields:
+      fields:
+        - from: container.name
+          to: host.name
+        - from: container.name
+          to: event.dataset
+      fail_on_error: false
+      ignore_missing: true
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+    
+fields: { environment: 'development' }
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: "elastic"
+  password: "changeme"
+
+# setup:
+#   kibana:
+#     host: "kibana:5601"
+#   dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
+
+monitoring:
+  enabled: true

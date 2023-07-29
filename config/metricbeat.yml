@@ -1,0 +1,25 @@
+metricbeat.modules:
+  - module: system
+    metricsets: ["core", "cpu", "load", "diskio", "memory", "network", "process", "socket"]
+    process.cgroups.enabled: true
+    period: 15s
+
+  - module: docker
+    metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "image", "memory", "network"]
+    hosts: ["unix:///var/run/docker.sock"]
+    period: 15s
+
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+  - add_cloud_metadata: ~
+
+fields: { environment: 'development' }
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: "elastic"
+  password: "changeme"
+
+monitoring:
+  enabled: true
